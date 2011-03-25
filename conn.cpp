@@ -83,12 +83,12 @@ void settimeout(int msec)
   if(msec <= 1000)
   {
     timeout.tv_sec = 0;
-    timeout.tv_usec = msec;
+    timeout.tv_usec = msec * 1000;
   }
   else
   {
     timeout.tv_sec = msec/1000;
-    timeout.tv_usec = msec - timeout.tv_sec * 1000;
+    timeout.tv_usec = (msec - timeout.tv_sec * 1000) * 1000;
   };
 }
 //--------------------------------------------------------------------------------------
@@ -249,6 +249,33 @@ int sendcommand(int comm, int pass, parameter *param)
 #ifdef DEBUG
   PrintComm(&cmd);
 #endif
+
+  int state = 0;
+  answer      a;
+
+  tries = 1;
+  bool flag = false;
+  while(tries < MAX_TRIES && !flag)
+  {
+    state = checkstate();
+    switch(state)
+    {
+      case NAK:
+        flag = true;
+        break;
+      case ACK:
+        readanswer(&a);
+        //clearanswer();
+        flag = true;
+        break;
+      case -1:
+        tries++;
+      };
+  };
+
+  if (!flag)
+      return -1;
+
   for(tries = 1; tries <= MAX_TRIES; tries++)
     {
       if(write(devfile,cmd.buff,cmd.len) != -1)
@@ -265,39 +292,40 @@ int sendcommand(int comm, int pass, parameter *param)
 //--------------------------------------------------------------------------------------
 int readanswer(answer *ans)
 {
-  short int  len, crc, tries, repl;
-  for(tries = 0; tries < MAX_TRIES; tries++)
-  {
-    repl = readbyte(prop->Timeout * 100);
-    if(connected == 1)
+    short int  len, crc, tries, repl;
+    for(tries = 0; tries < MAX_TRIES; tries++)
     {
-      if(repl == STX)
-      {
-        len = readbyte();
+        repl = readbyte(prop->Timeout * 100);
         if(connected == 1)
         {
-          if(readbytes(ans->buff, len) == len)
-          {
-            crc = readbyte();
-            if(connected != 0)
+            if(repl == STX)
             {
-              if(crc == (LRC(ans->buff, len, 0) ^ len))
-              {
-                sendACK();
-                ans->len = len;
-                return len;
-              }
-            else sendNAK();
-            };
-          };
-        };
-      };
+                len = readbyte();
+                if(connected == 1)
+                {
+                    if(readbytes(ans->buff, len) == len)
+                    {
+                        crc = readbyte();
+                        if(connected != 0)
+                        {
+                            if(crc == (LRC(ans->buff, len, 0) ^ len))
+                            {
+                                sendACK();
+                                ans->len = len;
+                                return len;
+                            }
+                            else
+                                sendNAK();
+                        }
+                    }
+                }
+            }
+        }
+        sendENQ();
+        repl = readbyte(prop->Timeout * 2);
+        if(connected != 1 || repl != ACK) tries++;
     };
-    sendENQ();
-    repl = readbyte(prop->Timeout * 2);
-    if(connected != 1 || repl != ACK) tries++;
-  };
-  return -1;
+    return -1;
 }
 //--------------------------------------------------------------------------------------
 int clearanswer(void)

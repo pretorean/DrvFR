@@ -133,6 +133,7 @@ static fr_func fn =
   Test,
   WriteLicense,
   WriteTable,
+  OpenCheck,
   &fr
 };
 //-----------------------------------------------------------------------------
@@ -1783,5 +1784,26 @@ int PrintBarCode(void)
   fr.OperatorNumber = a.buff[2];
 
   return 0;
+}
+//-----------------------------------------------------------------------------
+int OpenCheck(void)
+{
+    parameter  p;
+    answer     a;
+
+    if(!connected) return -1;
+
+    p.buff[0] = fr.DocumentType;
+    p.len    = 1;
+
+    if(sendcommand(OPEN_CHECK, fr.Password, &p) < 0) return -1;
+    if(readanswer(&a) < 0) return -1;
+    if(a.buff[0] != OPEN_CHECK) return -1;
+
+    if(errhand(&a) != 0) return fr.ResultCode;
+
+    fr.OperatorNumber = a.buff[2];
+
+    return 0;
 }
 //-----------------------------------------------------------------------------
