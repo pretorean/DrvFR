@@ -1,0 +1,4 @@
+portnum=1
+passwd=30
+boudrate=115200
+timeout=50

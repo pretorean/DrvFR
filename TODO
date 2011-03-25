@@ -1,0 +1,10 @@
+packet    drvfr
+author    Igor V. Youdytsky <Pitcher@gw.tander.ru>, <Pitcher@newmail.ru>
+file      README
+language  Russian
+encoding  koi8-r
+copyright GPL
+
+- Есть сильное желание переделать все это в класс.
+- Сделать руссификацию сообщений об ошибках.
+- Сделать службу сетевого доступа к драйверу и организовать очередь команд. Поместить ее запуск в xinet.
