@@ -118,5 +118,6 @@ int SummOilCheck (void);
 int Test (void);
 int WriteLicense (void);
 int WriteTable (void);
+int OpenCheck (void);
 
 #endif

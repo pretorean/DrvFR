@@ -84,6 +84,7 @@
 #define CHECK_SUBTOTAL			0x89
 #define STORNO_DISCOUNT			0x8a
 #define STORNO_CHARGE			0x8b
+#define OPEN_CHECK                      0x8d
 #define DOZE_OIL_CHECK			0x90
 #define SUMM_OIL_CHECK			0x91
 #define CORRECTION			0x92
@@ -141,6 +142,7 @@ typedef struct
   double DiscountOnCheck;
   char*  DocumentName;
   int    DocumentNumber;
+  int    DocumentType;
   int    OpenDocumentNumber;
   int    DozeInMilliliters;
   double DozeInMoney;
@@ -343,6 +345,7 @@ struct fr_func
     int (*Test)(void);
     int (*WriteLicense)(void);
     int (*WriteTable)(void);
+    int (*OpenCheck)(void);
     /* Pointer to the interface properties structure */
     fr_prop *prop;
   };
